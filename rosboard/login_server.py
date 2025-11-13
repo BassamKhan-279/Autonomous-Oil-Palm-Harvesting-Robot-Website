@@ -403,6 +403,30 @@ async def delete_user(request):
             return web.json_response({"error": "Failed to delete user"}, status=resp.status)
 
 
+# 🟢 NEW CORS MIDDLEWARE (Fixes the redirect loop)
+@web.middleware
+async def cors_middleware(request, handler):
+    # This URL is the origin we allow to make requests (your ROSBoard server)
+    ROSBOARD_ORIGIN = 'http://localhost:8888'
+
+    # Handle preflight requests (OPTIONS method)
+    if request.method == 'OPTIONS':
+        response = web.Response()
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+        response.headers['Access-Control-Allow-Origin'] = ROSBOARD_ORIGIN
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
+
+    # Process the actual request
+    response = await handler(request)
+
+    # Add CORS headers to the response
+    response.headers['Access-Control-Allow-Origin'] = ROSBOARD_ORIGIN
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+    return response
+
+
 # ---------- Middleware ----------
 @web.middleware
 async def require_login_middleware(request, handler):
@@ -437,6 +461,8 @@ def main():
     # We remove all ROSBoard spawning and proxy logic here
     
     app = web.Application(middlewares=[
+        # 🟢 NEW: Register the CORS middleware first
+        cors_middleware,
         aiohttp_session.session_middleware(SimpleCookieStorage()),
         require_login_middleware
     ])
@@ -455,9 +481,6 @@ def main():
     
     # 🟢 CORRECTED ROUTE AND HANDLER
     app.router.add_post("/reset_password", reset_password_handler)
-    # NOTE: The reset_password.html page is usually served by Supabase when the user clicks the link.
-    # If the file is placed locally in /web, the user needs to manually navigate to it 
-    # with the hash. We'll leave the GET route out as the POST is the crucial part.
     
     # Admin Page Route
     app.router.add_get("/admin", admin_page)
