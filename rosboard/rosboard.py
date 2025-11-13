@@ -35,6 +35,15 @@ class ROSBoardNode(object):
         self.port = rospy.get_param("~port", 8888)
         self.title = rospy.get_param("~title", socket.gethostname())
 
+        #Define a list of allowed ROS topics (whitelist)
+        # Only topics in this list (or system topics like _dmesg) will be shown/subscribed to.
+        self.allowed_topics = [
+            "/camera/rgb/image_color/compressed",
+            # Add any other required ROS topics here, e.g.:
+            # "/tf", 
+            # "/odom"
+        ]
+
         # desired subscriptions of all the websockets connecting to this instance.
         # these remote subs are updated directly by "friend" class ROSBoardSocketHandler.
         # this class will read them and create actual ROS subscribers accordingly.
@@ -186,26 +195,43 @@ class ROSBoardNode(object):
 
         try:
             # all topics and their types as strings e.g. {"/foo": "std_msgs/String", "/bar": "std_msgs/Int32"}
-            self.all_topics = {}
+            all_ros_topics = {}
 
+            # 1. Get all published topics from the ROS network
             for topic_tuple in rospy.get_published_topics():
                 topic_name = topic_tuple[0]
                 topic_type = topic_tuple[1]
                 if type(topic_type) is list:
                     topic_type = topic_type[0] # ROS2
-                self.all_topics[topic_name] = topic_type
+                all_ros_topics[topic_name] = topic_type
+            
+            # 2. Filter the topics based on the whitelist
+            self.all_topics = {}
+            for topic_name, topic_type in all_ros_topics.items():
+                if topic_name in self.allowed_topics:
+                    self.all_topics[topic_name] = topic_type
 
+            # 3. Add system topics back to the final list sent to the client, 
+            #    since they are handled by special subscribers later.
+            for topic_name in self.remote_subs.keys():
+                 if topic_name.startswith('_'): # System topics start with _ (e.g., _dmesg)
+                     if topic_name not in self.all_topics:
+                         # We don't have the type here, but it's only used for display.
+                         # The system subscribers below will handle the messages.
+                         self.all_topics[topic_name] = "system_message" 
+
+            # 4. Broadcast the FILTERED list to the web clients
             self.event_loop.add_callback(
                 ROSBoardSocketHandler.broadcast,
                 [ROSBoardSocketHandler.MSG_TOPICS, self.all_topics ]
             )
 
+            # 5. Check remote subscriptions and create local subscriptions
             for topic_name in self.remote_subs:
                 if len(self.remote_subs[topic_name]) == 0:
                     continue
 
-                # remote sub special (non-ros) topic: _dmesg
-                # handle it separately here
+                # Handle remote sub special (non-ros) topics first:
                 if topic_name == "_dmesg":
                     if topic_name not in self.local_subs:
                         rospy.loginfo("Subscribing to dmesg [non-ros]")
@@ -224,11 +250,13 @@ class ROSBoardNode(object):
                         self.local_subs[topic_name] = ProcessesSubscriber(self.on_top)
                     continue
 
-                # check if remote sub request is not actually a ROS topic before proceeding
+                # 6. CRITICAL CHECK: ONLY subscribe if the topic is in the FILTERED list (self.all_topics)
                 if topic_name not in self.all_topics:
-                    rospy.logwarn("warning: topic %s not found" % topic_name)
+                    # This should only happen if a client requests a topic that was published
+                    # but is not on our hardcoded whitelist. We log a warning but skip subscribing.
+                    rospy.logwarn("warning: topic %s requested but not in whitelist" % topic_name)
                     continue
-
+                
                 # if the local subscriber doesn't exist for the remote sub, create it
                 if topic_name not in self.local_subs:
                     topic_type = self.all_topics[topic_name]
@@ -284,6 +312,7 @@ class ROSBoardNode(object):
 
         self.lock.release()
 
+    # The rest of the class methods (on_system_stats, on_top, on_dmesg, on_ros_msg) remain the same.
     def on_system_stats(self, system_stats):
         """
         system stats received. send it off to the client as a "fake" ROS message (which could at some point be a real ROS message)
