@@ -39,6 +39,8 @@ class ROSBoardNode(object):
         # Only topics in this list (or system topics like _dmesg) will be shown/subscribed to.
         self.allowed_topics = [
             "/camera/rgb/image_color/compressed",
+            "/battery_voltages",
+            "rtabmap/odom",
             # Add any other required ROS topics here, e.g.:
             # "/tf", 
             # "/odom"
