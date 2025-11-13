@@ -14,7 +14,6 @@ import aiohttp_session
 from aiohttp_session import SimpleCookieStorage, get_session
 
 # ---------- Configuration Constants ----------
-# Removed recursive self-spawning logic as this server is now independent of rosboard.
 USER_FACING_PORT = 8000 # The new port for the Login/Admin server
 ROSBOARD_URL = "http://localhost:8888" # The destination URL after successful login
 
@@ -22,7 +21,7 @@ ROSBOARD_URL = "http://localhost:8888" # The destination URL after successful lo
 BASE_DIR = pathlib.Path(__file__).parent
 WEB_DIR = BASE_DIR / "web"
 
-# ---------- Supabase Config  ----------
+# ---------- Supabase Config  ----------
 SUPABASE_URL = "https://pxlbmyygaiqevnbcrnmj.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMjI4NzUsImV4cCI6MjA3NzU4Mjg3NX0.gxRUciuoNt225CU9JJe1XGB8EKOoqUVjQKuH4nboERA"
 SUPABASE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjIyMjg3NSwiZXhwIjoyMDc3NTgyODc1fQ.Y3ffM2YVkI4qXgxKtRwyraSKEb39fhukdq-_BmQ6RSGM"
@@ -30,7 +29,7 @@ SUPABASE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 POSTGREST_BASE = f"{SUPABASE_URL}/rest/v1"
 AUTH_BASE = f"{SUPABASE_URL}/auth/v1"
 
-# --- Helper HTTP functions  ---
+# --- Helper HTTP functions  ---
 def _supabase_headers():
     return {
         "apikey": SUPABASE_ROLE_KEY,
@@ -105,7 +104,7 @@ async def sb_delete(session: ClientSession, path: str, params: dict = None):
         except Exception:
             return resp.status, {"raw": await resp.text()}
 
-# ---------- App startup / cleanup  ----------
+# ---------- App startup / cleanup  ----------
 async def on_startup(app):
     print("[Supabase] Creating HTTP client session")
     app["http_client"] = ClientSession()
@@ -160,7 +159,7 @@ async def login_page(request):
     return web.FileResponse(login_path)
 
 # -------------------------------------------------------------
-#   SECURE PAGE HANDLERS (Redirect to ROSBoard after login)
+#   SECURE PAGE HANDLERS (Redirect to ROSBoard after login)
 # -------------------------------------------------------------
 
 async def index_page(request):
@@ -172,18 +171,17 @@ async def index_page(request):
     raise web.HTTPFound(ROSBOARD_URL)
 
 
-# --- Logout, Register, Forgot Password, Admin, API Endpoints  ---
+# --- Logout, Register, Forgot Password, Admin, API Endpoints  ---
 async def logout(request):
     session = await get_session(request)
     session.invalidate()
     print("[Logout] User logged out.")
     raise web.HTTPFound("/login")
 
-# Insert this function into your login_server.py
-async def reset_password(request):
+# 🟢 CORRECTED HANDLER NAME FOR CONSISTENCY
+async def reset_password_handler(request):
     """
     Handles the password reset submission by calling the Supabase API directly.
-    The client-side JS passes the access_token in the form body.
     """
     try:
         data = await request.post()
@@ -220,6 +218,7 @@ async def reset_password(request):
     except Exception as e:
         print(f"[Reset] Internal error: {e}")
         return web.Response(text="An internal server error occurred during reset.", status=500)
+
 
 async def register_page(request):
     register_path = WEB_DIR / "register.html"
@@ -414,7 +413,10 @@ async def require_login_middleware(request, handler):
         "/login", "/register", "/forgot-password", "/static", 
         "/logout", "/api/get_session" 
     ]
-    
+    # We must also allow POST to /reset_password
+    if path == "/reset_password" and request.method == "POST":
+        return await handler(request)
+
     if any(path.startswith(p) for p in public_paths):
         return await handler(request)
 
@@ -428,7 +430,7 @@ async def require_login_middleware(request, handler):
     
     return await handler(request)
 
-# ---------- Main  ----------
+# ---------- Main  ----------
 def main():
     print(f"[LoginServer] 🔧 Starting Login/Admin server on port {USER_FACING_PORT}...")
     
@@ -450,9 +452,13 @@ def main():
     app.router.add_post("/register", register_page)
     app.router.add_get("/forgot-password", forgot_password_page)
     app.router.add_post("/forgot-password", forgot_password_page)
-    app.router.add_post("/reset-password", reset_password)
     
-
+    # 🟢 CORRECTED ROUTE AND HANDLER
+    app.router.add_post("/reset_password", reset_password_handler)
+    # NOTE: The reset_password.html page is usually served by Supabase when the user clicks the link.
+    # If the file is placed locally in /web, the user needs to manually navigate to it 
+    # with the hash. We'll leave the GET route out as the POST is the crucial part.
+    
     # Admin Page Route
     app.router.add_get("/admin", admin_page)
 
