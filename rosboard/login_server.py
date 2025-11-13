@@ -450,6 +450,7 @@ def main():
     app.router.add_post("/register", register_page)
     app.router.add_get("/forgot-password", forgot_password_page)
     app.router.add_post("/forgot-password", forgot_password_page)
+    app.router.add_post("/reset-password", reset_password)
     
 
     # Admin Page Route
