@@ -16,9 +16,9 @@
         <script type="text/javascript" src="js/eventemitter2.min.js"></script>
         <script text="text/javascript" src="js/import-helper.js"></script>
         <script type="text/javascript" src="js/material.min.js" defer></script>
-        <script type="text/javascript" src="js/leaflet.js"></script>        
-	      <script type="text/javascript" src="js/gl-matrix.js"></script>
-	      <script type="text/javascript" src="js/litegl.min.js"></script>
+        <script type="text/javascript" src="js/leaflet.js"></script>        
+        <script type="text/javascript" src="js/gl-matrix.js"></script>
+        <script type="text/javascript" src="js/litegl.min.js"></script>
         <script type="text/javascript" src="js/index.js" defer></script>
 
         <title>ROSboard</title>
@@ -27,9 +27,11 @@
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
           <header class="mdl-layout__header">
             <div class="mdl-layout__header-row">
-              <!-- Title -->
+              
+              <span id="admin-button-container"></span>
+
               <span class="mdl-layout-title">ROSboard</span>
-              <!-- Add spacer, to align navigation to the right -->
+              
               <div class="mdl-layout-spacer"></div>
             </div>
           </header>
@@ -56,4 +58,59 @@
   </div>
 
     </body>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('admin-button-container');
+            const LOGIN_SERVER_URL = 'http://localhost:8000';
+
+            // Function to fetch session data from the Login Server
+            fetch(`${LOGIN_SERVER_URL}/api/get_session`, {credentials: 'include'})
+                .then(response => {
+                    if (!response.ok) {
+                        // User not logged in on the Login Server, redirect them
+                        window.location.href = `${LOGIN_SERVER_URL}/login`;
+                        return null;
+                    }
+                    return response.json();
+                })
+                .then(user => {
+                    if (user && user.role === 'admin') {
+                        // Create the Admin Button element
+                        const adminButton = document.createElement('a');
+                        adminButton.href = `${LOGIN_SERVER_URL}/admin`;
+                        adminButton.textContent = 'Admin Panel';
+                        
+                        // Apply Material Design Lite (MDL) button classes
+                        adminButton.className = 'mdl-button mdl-js-button mdl-button--raised mdl-button--colored';
+                        adminButton.style.marginRight = '20px';
+                        adminButton.style.padding = '0 16px';
+                        
+                        // Add an icon for clarity
+                        const adminIcon = document.createElement('i');
+                        adminIcon.className = 'material-icons';
+                        adminIcon.textContent = 'admin_panel_settings';
+                        adminIcon.style.marginRight = '8px';
+
+                        adminButton.prepend(adminIcon);
+                        
+                        // Insert the button into the header row
+                        container.appendChild(adminButton);
+
+                        // Ensure MDL component is upgraded
+                        if (componentHandler) {
+                            componentHandler.upgradeElement(adminButton);
+                        }
+                    } else if (!user || user.error) {
+                        // Optional: Redirect if session is gone/error
+                        window.location.href = `${LOGIN_SERVER_URL}/login`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Error checking admin status:", error);
+                    // Fallback redirect in case of network error between the two servers
+                    window.location.href = `${LOGIN_SERVER_URL}/login`;
+                });
+        });
+    </script>
 </html>
