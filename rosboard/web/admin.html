@@ -10,60 +10,57 @@
     <link rel="stylesheet" href="/static/css/material.indigo-blue.min.css" />
     <link href="/static/css/index.css" media="all" rel="stylesheet" type="text/css">
     
-    <script src="/static/js/jquery-3.1.0.min.js"></script>
-    <script src="/static/js/material.min.js" defer></script>
+    <script type="text/javascript" src="/static/js/jquery-3.1.0.min.js"></script>
+    <script type="text/javascript" src="/static/js/material.min.js" defer></script>
 
     <style>
-        /* Base styles for MDL layout and sidebar—kept correct */
+        /* Base styles */
         .sidebar-user-info { position: absolute; bottom: 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding: 16px; box-sizing: border-box; }
         .sidebar-user-info .email { font-size: 0.9em; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 16px; padding-bottom: 8px; color: #c0c0c0; }
+        .mdl-layout-title { font-family: 'Titillium Web', sans-serif; color: #c0c0c0; }
+        .mdl-layout__drawer { background: #404040 !important; }
+        .mdl-layout__drawer-button { color: white !important; }
+        .topics-nav-title { text-transform: uppercase; color: #808080; font-size: 10pt; font-weight: 700; padding-left: 10pt; border-bottom: 1px dotted #505050; padding-top: 10pt; padding-bottom: 10pt; }
+        .mdl-navigation__link { color: #c0c0c0 !important; text-overflow: ellipsis; overflow: hidden; padding-top: 5pt !important; padding-bottom: 5pt !important; display: flex; align-items: center; }
 
-        /* 🚨 FIX: Dark Background and Text for Main Content Area 🚨 */
-        main.mdl-layout__content {
-            left: 240px !important; top: 64px !important; width: calc(100% - 240px) !important; height: calc(100vh - 64px) !important; position: absolute !important; overflow-y: auto !important; overflow-x: hidden !important; z-index: 10 !important; margin: 0 !important; 
-            background: #202020 !important; /* Main dark background */
-        }
-        .admin-content { padding: 24px; color: #f0f0f0; /* Light text for dark background */ }
+        /* 🚨 AESTHETIC FIX: Main Content Area Styling */
+        main.mdl-layout__content { background: #202020 !important; }
+        .admin-content { padding: 24px; color: #f0f0f0; } /* Set text color to light */
         
-        /* 🚨 FIX: Dark background for inner containers 🚨 */
+        /* 🚨 AESTHETIC FIX: Inner Containers (Forms/Tables) */
         .container, .admin-section {
-            background: #303030; 
-            border-radius: 5px; padding: 20px; margin-bottom: 20pt; box-shadow: 3px 3px 3px rgba(0,0,0,0.2); width: calc(100% - 40pt); margin-left: 20pt; margin-top: 20pt;
-            /* Ensure text inside is light */
-            color: #f0f0f0; 
+            background: #303030; /* Dark background for the modules */
+            color: #f0f0f0; /* Light text color */
+            border-radius: 5px; padding: 20px 40px; 
+            margin: 20pt auto; /* Center sections */
+            width: 95%; max-width: 900px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-sizing: border-box; 
         }
         
-        h1, h2 { 
-            border-bottom: 2px solid #3f51b5; padding-bottom: 10px; 
-            color: #c0c0c0; /* Light heading text */
-        }
-        
-        /* FIX: Table Backgrounds */
+        h1, h2 { border-bottom: 2px solid #3f51b5; padding-bottom: 10px; color: #c0c0c0; }
+
+        /* Table Overrides */
         .users-table { background: #404040; color: #c0c0c0; }
         .users-table th { background: #3f51b5; color: white; }
-        .users-table td { border-bottom: 1px solid #505050; color: #c0c0c0; }
-        tr:nth-child(even) { background-color: #383838; /* Slightly lighter row background */ }
+        .users-table td { border: 1px solid #505050; color: #c0c0c0; }
+        .users-table tr:nth-child(even) { background-color: #383838; }
         
-        /* FIX: Form Input Colors */
-        input, select, button {
-            border: 1px solid #505050; /* Darker border */
-            background: #383838; /* Dark input background */
-            color: #f0f0f0; /* Light text color */
-        }
-        .mdl-textfield__input { color: #f0f0f0; border-bottom: 1px solid rgba(255,255,255,0.3); }
+        /* Input Overrides */
+        input, select { background: #383838; color: #f0f0f0; border: 1px solid #505050; }
+        .mdl-textfield__input { color: #f0f0f0; border-bottom-color: rgba(255,255,255,0.3); }
         .mdl-textfield__label { color: rgba(255,255,255,0.5); }
-        .users-table select { background: #383838; color: #f0f0f0; border: 1px solid #505050; }
+        .mdl-textfield__input:focus { border-bottom-color: #8c9eff; }
 
-        /* Remaining styles are for sidebar/MDL layout */
-        .mdl-layout__drawer { background: #404040 !important; }
-        .mdl-layout-title { font-family: 'Titillium Web', sans-serif; color: #c0c0c0; }
-        .mdl-layout__drawer-button { color: white !important; }
-        .mdl-navigation__link { color: #c0c0c0 !important; padding-top: 5pt !important; padding-bottom: 5pt !important; }
-        .topics-nav-title { color: #808080; border-bottom: 1px dotted #505050; }
-        .sidebar-user-info .email { color: #c0c0c0; }
+        /* Other standard MDL styles */
+        .role-admin { background: #f44336; color: white; }
+        .role-user { background: #4caf50; color: white; }
+        .delete-btn { color: #ff5252; min-width: auto; }
+        .delete-btn:hover { background: rgba(255, 82, 82, 0.1); }
     </style>
 </head>
 <body>
+
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
         
         <header class="mdl-layout__header">
@@ -102,8 +99,9 @@
 
         <main class="mdl-layout__content">
             <div class="admin-content">
-                <div class="admin-section">
-                    <h3>Create New User</h3>
+                
+                <div class="container admin-section">
+                    <h2>Create New User</h2>
                     <form class="admin-form" id="create-user-form"> 
                         <div class="form-group">
                             <label for="user-email">New user email</label>
@@ -139,7 +137,7 @@
                     </form>
                 </div>
 
-                <div class="admin-section">
+                <div class="container admin-section">
                     <h3>Existing Users</h3>
                     <table class="users-table">
                         <thead>
@@ -169,7 +167,6 @@
         const LOGIN_SERVER_URL = 'http://localhost:8000';
         const ROSBOARD_URL = 'http://localhost:8888';
 
-        // Helper function to show snackbar messages
         const showSnackbar = (message, timeout = 4000) => {
             const snackbar = document.getElementById('snackbar');
             if (snackbar && snackbar.MaterialSnackbar) {
@@ -179,8 +176,6 @@
             }
         };
 
-        // --- API Functions ---
-        
         const updateUserRole = (userId, newRole) => {
             fetch(`/api/users/${userId}/role`, {
                 method: 'PUT',
@@ -206,7 +201,7 @@
                     return response.json();
                 })
                 .then(() => {
-                    row.remove(); // Remove from UI
+                    row.remove(); 
                     showSnackbar(`User ${email} deleted successfully`);
                 })
                 .catch(error => {
@@ -215,10 +210,7 @@
                 });
         };
         
-        // --- Rendering Functions ---
-
         const renderUserRow = (user) => {
-            const roleClass = user.role === 'admin' ? 'role-admin' : 'role-user';
             const row = document.createElement('tr');
             row.setAttribute('data-user-id', user.id);
             row.innerHTML = `
@@ -236,13 +228,11 @@
                 </td>
             `;
             
-            // Attach delete handler immediately
             const deleteButton = row.querySelector('.delete-btn');
             deleteButton.addEventListener('click', function() {
                 deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row);
             });
 
-            // Attach role change handler
             const roleSelector = row.querySelector('.role-selector');
             roleSelector.addEventListener('change', function() {
                 updateUserRole(this.getAttribute('data-user-id'), this.value);
@@ -255,7 +245,6 @@
             return row;
         };
         
-        // Function to fetch and render all users
         const fetchAndRenderUsers = () => {
             const tableBody = document.getElementById('users-table-body');
             tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #aaa;">Loading users...</td></tr>';
@@ -273,7 +262,7 @@
                     return response.json();
                 })
                 .then(users => {
-                    tableBody.innerHTML = ''; // Clear loading row
+                    tableBody.innerHTML = ''; 
                     users.forEach(user => {
                         tableBody.appendChild(renderUserRow(user));
                     });
@@ -286,36 +275,29 @@
                 });
         };
 
-        
-        // --- Main DOM Ready Logic ---
         document.addEventListener("DOMContentLoaded", function() {
-            // Initialize MDL components
             if (typeof componentHandler !== 'undefined') {
                 componentHandler.upgradeAllRegistered();
             }
 
             const userLinksContainer = document.getElementById("user-links");
             const createForm = document.getElementById('create-user-form');
-            const tableBody = document.getElementById('users-table-body');
-
-            // 1. Fetch user session information (Security Check & Sidebar)
+            
             fetch(`${LOGIN_SERVER_URL}/api/get_session`, {credentials: 'include'})
                 .then(response => {
                     if (!response.ok) {
-                        window.location.href = '/login'; // Redirect to Login Server login page
+                        window.location.href = '/login'; 
                         throw new Error('Not authenticated');
                     }
                     return response.json();
                 })
                 .then(user => {
-                    // Render sidebar links
                     let linksHtml = '';
                     if (user.role === 'admin') {
                         linksHtml += `<a class="mdl-navigation__link" href="/admin">
                             <i class="material-icons">admin_panel_settings</i> Admin Panel
                         </a>`;
                     }
-                    // Since Profile page was removed, just add Logout
                     linksHtml += `
                         <div class="email" title="${user.email}">${user.email}</div>
                         <a class="mdl-navigation__link" href="/logout">
@@ -327,24 +309,21 @@
                         componentHandler.upgradeElements(userLinksContainer);
                     }
                     
-                    // 2. Load the list of all existing users
                     fetchAndRenderUsers(); 
                 })
                 .catch(error => {
                     if (error.message !== 'Not authenticated') {
                        console.error("Error fetching user session:", error);
                     }
-                    // Final fallback to login page
                     window.location.href = '/login';
                 });
 
-            // 3. Form submission handler (Create New User)
             createForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                // 🚨 FIX: Ensure correct IDs for form inputs are used
-                const email = document.getElementById('user-email').value; // Corrected
-                const password = document.getElementById('user-password').value; // Corrected
-                const role = document.getElementById('user-role-create').value; // Corrected
+                // 🚨 CORRECTED REFERENCES
+                const email = document.getElementById('user-email').value; 
+                const password = document.getElementById('user-password').value; 
+                const role = document.getElementById('user-role-create').value; 
                 
                 if (password.length < 6) {
                     showSnackbar("Password must be at least 6 characters.", 3000);
@@ -369,6 +348,7 @@
                     showSnackbar(`User ${newUser.email} created successfully as ${newUser.role}`);
                     
                     // Add the new user to the table
+                    const tableBody = document.getElementById('users-table-body');
                     tableBody.appendChild(renderUserRow(newUser));
 
                     // Reset form inputs
