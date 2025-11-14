@@ -28,11 +28,12 @@
           <header class="mdl-layout__header">
             <div class="mdl-layout__header-row">
               
-              <span id="admin-button-container"></span>
-
               <span class="mdl-layout-title">Autonomous Oil Palm Harvesting Robot System</span>
               
               <div class="mdl-layout-spacer"></div>
+              
+              <span id="admin-button-container"></span>
+              
             </div>
           </header>
           <div class="mdl-layout__drawer">
@@ -89,6 +90,9 @@
                         adminButton.style.marginRight = '20px';
                         adminButton.style.padding = '0 16px';
                         
+                        // 🟢 FIX: Set a smaller border radius for the button
+                        adminButton.style.borderRadius = '4px'; 
+                        
                         // Add an icon for clarity
                         const adminIcon = document.createElement('i');
                         adminIcon.className = 'material-icons';
@@ -105,8 +109,6 @@
                             componentHandler.upgradeElement(adminButton);
                         }
                     }
-                    // NOTE: Removed the 'else if (!user || user.error)' redirect block, 
-                    // relying only on the initial 'if (!response.ok)' check for security.
                 })
                 .catch(error => {
                     console.error("Network Error when checking session:", error);
