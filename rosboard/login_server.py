@@ -16,6 +16,8 @@ from aiohttp_session import SimpleCookieStorage, get_session
 # ---------- Configuration Constants ----------
 USER_FACING_PORT = 8000
 ROSBOARD_URL = "http://localhost:8888"
+# Defined here for absolute redirect in middleware
+LOGIN_SERVER_URL = f"http://localhost:{USER_FACING_PORT}" 
 
 # ---------- Paths ----------
 BASE_DIR = pathlib.Path(__file__).parent
@@ -23,8 +25,8 @@ WEB_DIR = BASE_DIR / "web"
 
 # ---------- Supabase Config  ----------
 SUPABASE_URL = "https://pxlbmyygaiqevnbcrnmj.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyMjI4NzUsImV4cCI6MjA3NzU4Mjg3NX0.gxRUciuoNt225CU9JJe1XGB8EKOoqUVjQKuH4nboERA"
-SUPABASE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjIyMjg3NSwiZXhwIjoyMDc3NTgyODc1fQ.Y3ffM2YVkI4qXgxKtRwyraSKEb39fhukdq-_BmQ6RSGM"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMDU3NjUsImV4cCI6MjA3ODQ2NTc2NX0.dZGlpzwumKk2RkcuBr311UaxsT28hUu9fD027Qj8jhA"
+SUPABASE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB4bGJteXlnYWlxZXZuYmNybm1qIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzEwNTc2NSwiZXhwIjoyMDc4NDY1NzY1fQ._-WhtBPNPhuVwap51TK4JL29EvhU9XELErT4dMhhr5o"
 
 POSTGREST_BASE = f"{SUPABASE_URL}/rest/v1"
 AUTH_BASE = f"{SUPABASE_URL}/auth/v1"
@@ -150,7 +152,6 @@ async def login_page(request):
                 print(f"[Login] ⚠️ No profile found for {email}, defaulting to 'user' role.")
 
             # CRITICAL: This is where the session is created with the role.
-            # If the DB role is 'admin', it must be stored here.
             session_data = await get_session(request)
             session_data["user"] = {"email": email, "role": role, "id": user_id}
             
@@ -168,7 +169,7 @@ async def index_page(request):
     """After login, redirects to the main ROSBoard URL."""
     session = await get_session(request)
     if "user" not in session:
-        raise web.HTTPFound("/login")
+        raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login") # Use absolute path here too
     # Redirect directly to ROSBoard's root URL (localhost:8888)
     raise web.HTTPFound(ROSBOARD_URL)
 
@@ -178,7 +179,7 @@ async def logout(request):
     session = await get_session(request)
     session.invalidate()
     print("[Logout] User logged out.")
-    raise web.HTTPFound("/login")
+    raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login") # Use absolute path on final redirect
 
 # 🟢 CORRECTED HANDLER NAME FOR CONSISTENCY
 async def reset_password_handler(request):
@@ -260,7 +261,7 @@ async def register_page(request):
         
         if profile_status in (200, 201):
             print(f"[Register] ✅ Profile created for: {email} as {role}")
-            raise web.HTTPFound("/login")
+            raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login") # Use absolute path
         else:
             print(f"[Register] ❌ Profile creation failed: {profile_created}")
             return web.Response(text="Registration failed (profile creation error)", status=500)
@@ -367,7 +368,7 @@ async def admin_create_user(request):
     
     if profile_status in (200, 201):
         print(f"[Admin] ✅ Profile created for: {email} as {role}")
-        return web.json_response(profile_created[0]) # Return the new user object
+        return web.json_response(profile_created) # Return the new user object array
     else:
         print(f"[Admin] ❌ Profile creation failed: {profile_created}")
         return web.json_response({"error": "Profile creation failed"}, status=500)
@@ -459,7 +460,8 @@ async def require_login_middleware(request, handler):
             return web.json_response({"error": "Not authenticated"}, status=401)
         
         print(f"[Security] No session, redirecting to /login (requested path: {path})")
-        raise web.HTTPFound("/login")
+        # 🚨 FINAL FIX: Use absolute URL redirect to port 8000
+        raise web.HTTPFound(f"{LOGIN_SERVER_URL}/login")
     
     return await handler(request)
 
@@ -485,8 +487,6 @@ def main():
     app.router.add_post("/register", register_page)
     app.router.add_get("/forgot-password", forgot_password_page)
     app.router.add_post("/forgot-password", forgot_password_page)
-    
-    # 🟢 CORRECTED ROUTE AND HANDLER
     app.router.add_post("/reset_password", reset_password_handler)
     
     # Admin Page Route
