@@ -21,7 +21,7 @@
         <script type="text/javascript" src="js/litegl.min.js"></script>
         <script type="text/javascript" src="js/index.js" defer></script>
 
-        <title>ROSboard</title>
+        <title>Autonomous Oil Palm Harvesting Robot System</title>
     </head>
     <body>
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
@@ -30,8 +30,7 @@
               
               <span id="admin-button-container"></span>
 
-              <span class="mdl-layout-title">Autonomous Oil Palm Harvesting Robot System
-</span>
+              <span class="mdl-layout-title">Autonomous Oil Palm Harvesting Robot System</span>
               
               <div class="mdl-layout-spacer"></div>
             </div>
@@ -68,14 +67,17 @@
             // Function to fetch session data from the Login Server
             fetch(`${LOGIN_SERVER_URL}/api/get_session`, {credentials: 'include'})
                 .then(response => {
-                    if (!response.ok) {
-                        // User not logged in on the Login Server, redirect them
+                    // Check for network errors, 401 Unauthorized, or 403 Forbidden
+                    if (response.status === 401 || response.status === 403 || !response.ok) {
+                        // User not logged in/session expired, redirect them
                         window.location.href = `${LOGIN_SERVER_URL}/login`;
-                        return null;
+                        return null; // Stop processing
                     }
                     return response.json();
                 })
                 .then(user => {
+                    if (!user) return; // Stop if redirect happened above
+
                     if (user && user.role === 'admin') {
                         // Create the Admin Button element
                         const adminButton = document.createElement('a');
@@ -102,15 +104,14 @@
                         if (componentHandler) {
                             componentHandler.upgradeElement(adminButton);
                         }
-                    } else if (!user || user.error) {
-                        // Optional: Redirect if session is gone/error
-                        window.location.href = `${LOGIN_SERVER_URL}/login`;
                     }
+                    // NOTE: Removed the 'else if (!user || user.error)' redirect block, 
+                    // relying only on the initial 'if (!response.ok)' check for security.
                 })
                 .catch(error => {
-                    console.error("Error checking admin status:", error);
-                    // Fallback redirect in case of network error between the two servers
-                    window.location.href = `${LOGIN_SERVER_URL}/login`;
+                    console.error("Network Error when checking session:", error);
+                    // This catches general network failures (e.g., server 8000 is down)
+                    window.location.href = `${LOGIN_SERVER_URL}/login`; 
                 });
         });
     </script>
