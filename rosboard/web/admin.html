@@ -10,14 +10,12 @@
     <link rel="stylesheet" href="/static/css/material.indigo-blue.min.css" />
     <link href="/static/css/index.css" media="all" rel="stylesheet" type="text/css">
     
-    <script type="text/javascript" src="/static/js/jquery-3.1.0.min.js"></script>
-    <script type="text/javascript" src="/static/js/material.min.js" defer></script>
+    <script src="/static/js/jquery-3.1.0.min.js"></script>
+    <script src="/static/js/material.min.js" defer></script>
 
     <style>
         /* CSS styles remain untouched */
-        .sidebar-user-info {
-          position: absolute; bottom: 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding: 16px; box-sizing: border-box; 
-        }
+        .sidebar-user-info { position: absolute; bottom: 0; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); padding: 16px; box-sizing: border-box; }
         .sidebar-user-info .email { font-size: 0.9em; opacity: 0.7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 16px; padding-bottom: 8px; color: #c0c0c0; }
         .admin-content { padding: 24px; color: #000; }
         .container { background: #ffffff; padding: 20px 40px; border-radius: 12px; width: 95%; max-width: 900px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-bottom: 20px; box-sizing: border-box; }
@@ -162,7 +160,6 @@
 
         // --- API Functions ---
         
-        // 🟢 Function to handle role update via API
         const updateUserRole = (userId, newRole) => {
             fetch(`/api/users/${userId}/role`, {
                 method: 'PUT',
@@ -179,7 +176,6 @@
             });
         };
 
-        // Function to handle user deletion via API
         const deleteUser = (userId, email, row) => {
             if (!confirm(`Are you sure you want to delete user: ${email}? This action is irreversible.`)) return;
 
@@ -200,9 +196,7 @@
         
         // --- Rendering Functions ---
 
-        // 🟢 Helper function to render the user table row with role selector
         const renderUserRow = (user) => {
-            const roleClass = user.role === 'admin' ? 'role-admin' : 'role-user';
             const row = document.createElement('tr');
             row.setAttribute('data-user-id', user.id);
             row.innerHTML = `
@@ -220,13 +214,11 @@
                 </td>
             `;
             
-            // Attach delete handler immediately
             const deleteButton = row.querySelector('.delete-btn');
             deleteButton.addEventListener('click', function() {
                 deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row);
             });
 
-            // Attach role change handler
             const roleSelector = row.querySelector('.role-selector');
             roleSelector.addEventListener('change', function() {
                 updateUserRole(this.getAttribute('data-user-id'), this.value);
@@ -326,9 +318,9 @@
             createForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 // 🚨 FIX: Ensure correct IDs for form inputs are used
-                const email = document.getElementById('user-email').value; // Changed from 'new-email'
-                const password = document.getElementById('user-password').value; // Changed from 'new-password'
-                const role = document.getElementById('user-role-create').value; // Changed from 'new-role'
+                const email = document.getElementById('user-email').value; 
+                const password = document.getElementById('user-password').value; 
+                const role = document.getElementById('user-role-create').value; 
                 
                 if (password.length < 6) {
                     showSnackbar("Password must be at least 6 characters.", 3000);
@@ -372,5 +364,3 @@
             });
         });
     </script>
-</body>
-</html>
