@@ -116,16 +116,31 @@
                     // This catches general network failures (e.g., server 8000 is down)
                     window.location.href = `${LOGIN_SERVER_URL}/login`; 
                 });
-
-            // Force set the title to your desired text (as backup)
-            const layoutTitle = document.querySelector('.mdl-layout-title');
-            if (layoutTitle && layoutTitle.textContent !== 'Autonomous Oil Palm Harvesting Robot System') {
-                layoutTitle.textContent = 'Autonomous Oil Palm Harvesting Robot System';
-            }
         });
 
-        // Targeted cleanup for unwanted text nodes directly in body
+        // Enhanced cleanup for unwanted text nodes and title
         document.addEventListener('DOMContentLoaded', function() {
+            function enforceCorrectTitle() {
+                const layoutTitle = document.querySelector('.mdl-layout-title');
+                const desiredTitle = 'Autonomous Oil Palm Harvesting Robot System';
+                
+                if (layoutTitle) {
+                    // Remove any "ROSboard:" prefix and set the correct title
+                    let currentTitle = layoutTitle.textContent;
+                    if (currentTitle.includes('ROSboard:')) {
+                        currentTitle = currentTitle.replace('ROSboard:', '').trim();
+                    }
+                    if (currentTitle !== desiredTitle) {
+                        layoutTitle.textContent = desiredTitle;
+                    }
+                }
+                
+                // Also ensure document title is correct
+                if (document.title !== desiredTitle) {
+                    document.title = desiredTitle;
+                }
+            }
+            
             function removeUnwantedTextNodes() {
                 // Get all direct child nodes of body
                 const bodyChildren = document.body.childNodes;
@@ -161,13 +176,15 @@
             
             // Run cleanup immediately
             removeUnwantedTextNodes();
+            enforceCorrectTitle();
             
-            // Set up mutation observer to catch any dynamically added text nodes
+            // Set up mutation observer to catch any dynamically added/changed content
             const observer = new MutationObserver(function(mutations) {
                 let shouldCleanup = false;
+                let shouldEnforceTitle = false;
                 
                 mutations.forEach(function(mutation) {
-                    if (mutation.addedNodes.length > 0) {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                         mutation.addedNodes.forEach(function(node) {
                             if (node.nodeType === Node.TEXT_NODE && 
                                 (node.textContent.includes('Â&nbsp;') || node.textContent.includes('\u00A0'))) {
@@ -175,21 +192,43 @@
                             }
                         });
                     }
+                    
+                    // Check if title was modified
+                    if (mutation.type === 'characterData' && mutation.target.classList.contains('mdl-layout-title')) {
+                        shouldEnforceTitle = true;
+                    }
                 });
                 
                 if (shouldCleanup) {
                     removeUnwantedTextNodes();
                 }
+                if (shouldEnforceTitle) {
+                    enforceCorrectTitle();
+                }
             });
             
-            // Start observing for new text nodes
+            // Start observing for changes
             observer.observe(document.body, {
                 childList: true,
-                subtree: false // Only watch direct children of body
+                subtree: true,
+                characterData: true
             });
             
-            // Final cleanup after a short delay
-            setTimeout(removeUnwantedTextNodes, 500);
+            // Run cleanup multiple times to catch any delayed changes
+            setTimeout(() => {
+                removeUnwantedTextNodes();
+                enforceCorrectTitle();
+            }, 100);
+            
+            setTimeout(() => {
+                removeUnwantedTextNodes();
+                enforceCorrectTitle();
+            }, 500);
+            
+            setTimeout(() => {
+                removeUnwantedTextNodes();
+                enforceCorrectTitle();
+            }, 1000);
         });
     </script>
 </html>
