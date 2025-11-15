@@ -40,7 +40,7 @@ class ROSBoardNode(object):
         self.allowed_topics = [
             "/camera/rgb/image_color/compressed",
             "/battery_voltages",
-            "rtabmap/odom",
+            "/rtabmap/odom",
             # Add any other required ROS topics here, e.g.:
             # "/tf", 
             # "/odom"
