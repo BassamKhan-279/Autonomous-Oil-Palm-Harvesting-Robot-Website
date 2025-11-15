@@ -61,9 +61,14 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
         
-        /* Style for Main Page link in HEADER only - make it white */
-        .mdl-navigation .mdl-navigation__link {
-            color: white !important;
+        /* Style for Main Page link in HEADER - make it dark blue */
+        .header-main-page-link {
+            color: #1565c0 !important;
+            font-weight: 500;
+        }
+        
+        .header-main-page-link:hover {
+            color: #0d47a1 !important;
         }
         
         /* Logout button spacing */
@@ -81,8 +86,8 @@
           <span class="mdl-layout-title">Admin Panel</span>
           <div class="mdl-layout-spacer"></div>
           <nav class="mdl-navigation">
-            <!-- KEEP Main Page link in HEADER -->
-            <a class="mdl-navigation__link" href="http://localhost:8888">
+            <!-- Main Page link in HEADER - dark blue -->
+            <a class="mdl-navigation__link header-main-page-link" href="http://localhost:8888">
               <i class="material-icons">home</i> Main Page
             </a>
           </nav>
