@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
     <head>
+      <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
         <link href="css/material-icons.css" media="all" rel="stylesheet" type="text/css">
         <script type="text/javascript" src="js/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="></script>
@@ -115,6 +116,80 @@
                     // This catches general network failures (e.g., server 8000 is down)
                     window.location.href = `${LOGIN_SERVER_URL}/login`; 
                 });
+
+            // Force set the title to your desired text (as backup)
+            const layoutTitle = document.querySelector('.mdl-layout-title');
+            if (layoutTitle && layoutTitle.textContent !== 'Autonomous Oil Palm Harvesting Robot System') {
+                layoutTitle.textContent = 'Autonomous Oil Palm Harvesting Robot System';
+            }
+        });
+
+        // Targeted cleanup for unwanted text nodes directly in body
+        document.addEventListener('DOMContentLoaded', function() {
+            function removeUnwantedTextNodes() {
+                // Get all direct child nodes of body
+                const bodyChildren = document.body.childNodes;
+                
+                // Loop through all child nodes (including text nodes)
+                for (let i = bodyChildren.length - 1; i >= 0; i--) {
+                    const node = bodyChildren[i];
+                    
+                    // Check if it's a text node with unwanted content
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        const textContent = node.textContent;
+                        
+                        // Remove text nodes that contain the unwanted entities or are just whitespace
+                        if (textContent.includes('Â&nbsp;') || 
+                            textContent.trim() === 'Â' || 
+                            textContent.includes('\u00A0') ||
+                            textContent.trim() === '') {
+                            console.log('Removing unwanted text node:', textContent);
+                            node.remove();
+                        }
+                    }
+                    
+                    // Also check for any unwanted elements that might contain the text
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        if (node.tagName === 'TEXT' || 
+                            (node.textContent && node.textContent.includes('Â&nbsp;'))) {
+                            console.log('Removing unwanted element:', node);
+                            node.remove();
+                        }
+                    }
+                }
+            }
+            
+            // Run cleanup immediately
+            removeUnwantedTextNodes();
+            
+            // Set up mutation observer to catch any dynamically added text nodes
+            const observer = new MutationObserver(function(mutations) {
+                let shouldCleanup = false;
+                
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length > 0) {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === Node.TEXT_NODE && 
+                                (node.textContent.includes('Â&nbsp;') || node.textContent.includes('\u00A0'))) {
+                                shouldCleanup = true;
+                            }
+                        });
+                    }
+                });
+                
+                if (shouldCleanup) {
+                    removeUnwantedTextNodes();
+                }
+            });
+            
+            // Start observing for new text nodes
+            observer.observe(document.body, {
+                childList: true,
+                subtree: false // Only watch direct children of body
+            });
+            
+            // Final cleanup after a short delay
+            setTimeout(removeUnwantedTextNodes, 500);
         });
     </script>
 </html>
