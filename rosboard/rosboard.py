@@ -74,17 +74,11 @@ class ROSBoardNode(object):
         (r"/rosboard/v1", ROSBoardSocketHandler, {
             "node": self,
         }),
-        # Serve robot-control page using regular StaticFileHandler
-        (r"/robot-control", tornado.web.StaticFileHandler, {
-            "path": tornado_settings.get("static_path"),
-            "default_filename": "robot-control.html"
-        }),
-        # Default route - serve index.html for root and other requests
+        # Serve all static files including robot-control.html
         (r"/(.*)", tornado.web.StaticFileHandler, {
             "path": tornado_settings.get("static_path"),
             "default_filename": "index.html"
         }),
-        
         ]
 
         self.event_loop = None
