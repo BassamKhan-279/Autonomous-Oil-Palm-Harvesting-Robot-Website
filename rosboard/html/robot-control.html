@@ -1,259 +1,365 @@
-<!doctype html>
-<html>
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-        <link href="css/material-icons.css" media="all" rel="stylesheet" type="text/css">
-        <script type="text/javascript" src="js/jquery-3.1.0.min.js" integrity="sha256-cCueBR6CsyA4/9szpPfrX3s49M9vUU5BgtiJj06wt/s="></script>
-        <link rel="stylesheet" href="css/material.indigo-blue.min.css" />
-        <link rel="stylesheet" href="css/uPlot.min.css">
-        <link rel="stylesheet" href="css/leaflet.css">
-        <link href="css/index.css" media="all" rel="stylesheet" type="text/css">
-        
-        <script type="text/javascript" src="js/json5.min.js"></script>
-        <script type="text/javascript" src="js/uPlot.iife.min.js"></script>
-        <script type="text/javascript" src="js/jquery.transit.min.js"></script>
-        <script type="text/javascript" src="js/masonry.pkgd.min.js"></script>
-        <script type="text/javascript" src="js/eventemitter2.min.js"></script>
-        <script text="text/javascript" src="js/import-helper.js"></script>
-        <script type="text/javascript" src="js/material.min.js" defer></script>
-        <script type="text/javascript" src="js/leaflet.js"></script>        
-        <script type="text/javascript" src="js/gl-matrix.js"></script>
-        <script type="text/javascript" src="js/litegl.min.js"></script>
-        <script type="text/javascript" src="js/index.js" defer></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Control - Autonomous Oil Palm Harvesting Robot System</title>
 
-        <title>Autonomous Oil Palm Harvesting Robot System</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/material.indigo-blue.min.css">
+    <link href="css/material-icons.css" rel="stylesheet"> 
+    <link href="css/index.css" rel="stylesheet" type="text/css"> 
+
+    <script src="js/jquery-3.1.0.min.js"></script>
+    <script src="js/material.min.js" defer></script>
+
+    <style>
+        /* Main layout styling */
+        .mdl-layout__header {
+            background-color: #3f51b5;
+        }
         
-        <style>
-            /* Smaller button styles */
-            .header-button {
-                margin-right: 12px !important;
-                padding: 0 12px !important;
-                border-radius: 4px !important;
-                height: 36px !important;
-                line-height: 36px !important;
-                font-size: 14px !important;
-                min-width: auto !important;
-            }
-            
-            .header-button .material-icons {
-                font-size: 18px !important;
-                margin-right: 6px !important;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-          <header class="mdl-layout__header">
+        .mdl-layout-title {
+            font-family: 'Titillium Web', sans-serif;
+            color: white;
+        }
+        
+        main.mdl-layout__content {
+            background: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+        
+        .control-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 800px;
+        }
+        
+        .page-title {
+            color: #333;
+            font-size: 2.2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3f51b5;
+            padding-bottom: 15px;
+        }
+        
+        /* Boxes layout */
+        .boxes-container {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        .control-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            min-width: 280px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .box-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        /* Progress bar styling */
+        .progress-section {
+            margin-bottom: 30px;
+        }
+        
+        .progress-label {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .progress-container {
+            width: 100%;
+            height: 25px;
+            background: #e9ecef;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #45a049);
+            border-radius: 25px;
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+        
+        /* Button styling - oval shape */
+        .control-button {
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            margin: 10px 0;
+            min-width: 180px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .start-button {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        
+        .start-button.active {
+            background: #4caf50;
+            color: white;
+            box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .stop-button {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        
+        .stop-button.active {
+            background: #f44336;
+            color: white;
+            box-shadow: 0 6px 12px rgba(244, 67, 54, 0.3);
+        }
+        
+        .control-button:hover:not(.active) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        }
+        
+        .control-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Status indicator */
+        .status-indicator {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .status-stopped {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .status-running {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        /* Main page link styling */
+        .main-page-link {
+            color: white !important;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
             <div class="mdl-layout__header-row">
-              
-              <span class="mdl-layout-title">Autonomous Oil Palm Harvesting Robot System</span>
-              
-              <div class="mdl-layout-spacer"></div>
-              
-              <span id="admin-button-container"></span>
-              
+                <span class="mdl-layout-title">Robot Control Panel</span>
+                <div class="mdl-layout-spacer"></div>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link main-page-link" href="http://localhost:8888">
+                        <i class="material-icons">home</i> Main Page
+                    </a>
+                </nav>
             </div>
-          </header>
-          <div class="mdl-layout__drawer">
-            <nav id="topics-nav" class="mdl-navigation">
-                <div id="topics-nav-system-title" class="topics-nav-title">System</div>
-                <div id="topics-nav-system"></div>
-                <div id="topics-nav-ros-title" class="topics-nav-title">ROS topics</div>
-                <div id="topics-nav-ros"></div>
-                <div style="opacity:0.3;" id="topics-nav-unsupported"></div>
-            </nav>
-          </div>
-          <main class="mdl-layout__content">
-            <div class="page-content">
-              <div class="grid">
-              </div>
-            </div>
-          </main>
-        </div>
-        
-  <div id="demo-toast-example" class="mdl-js-snackbar mdl-snackbar">
-    <div class="mdl-snackbar__text"></div>
-    <button class="mdl-snackbar__action" type="button"></button>
-  </div>
+        </header>
 
-    </body>
+        <main class="mdl-layout__content">
+            <div class="control-container">
+                <div class="page-title">Robot Control System</div>
+                
+                <!-- Progress Bar Section -->
+                <div class="progress-section">
+                    <div class="progress-label">Task Completion Progress</div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                </div>
+
+                <!-- Control Boxes -->
+                <div class="boxes-container">
+                    <!-- Box 1 -->
+                    <div class="control-box">
+                        <div class="box-title">Harvesting Control</div>
+                        <button class="control-button start-button" id="startHarvest">
+                            <i class="material-icons">play_arrow</i> Start Harvest
+                        </button>
+                        <div style="height: 15px;"></div> <!-- Spacing -->
+                        <button class="control-button stop-button active" id="stopHarvest">
+                            <i class="material-icons">stop</i> Stop Harvest
+                        </button>
+                        <div class="status-indicator status-stopped" id="harvestStatus">
+                            Status: Stopped
+                        </div>
+                    </div>
+
+                    <!-- Box 2 -->
+                    <div class="control-box">
+                        <div class="box-title">Navigation Control</div>
+                        <button class="control-button start-button" id="startNavigation">
+                            <i class="material-icons">navigation</i> Start Navigation
+                        </button>
+                        <div style="height: 15px;"></div> <!-- Spacing -->
+                        <button class="control-button stop-button active" id="stopNavigation">
+                            <i class="material-icons">location_disabled</i> Stop Navigation
+                        </button>
+                        <div class="status-indicator status-stopped" id="navigationStatus">
+                            Status: Stopped
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('admin-button-container');
-            const LOGIN_SERVER_URL = 'http://localhost:8000';
+        // Robot Control State
+        let robotState = {
+            harvesting: false,
+            navigation: false,
+            progress: 0,
+            progressInterval: null
+        };
 
-            // Function to fetch session data from the Login Server
-            fetch(`${LOGIN_SERVER_URL}/api/get_session`, {credentials: 'include'})
-                .then(response => {
-                    // Check for network errors, 401 Unauthorized, or 403 Forbidden
-                    if (response.status === 401 || response.status === 403 || !response.ok) {
-                        // User not logged in/session expired, redirect them
-                        window.location.href = `${LOGIN_SERVER_URL}/login`;
-                        return null; // Stop processing
-                    }
-                    return response.json();
-                })
-                .then(user => {
-                    if (!user) return; // Stop if redirect happened above
+        // DOM Elements
+        const startHarvestBtn = document.getElementById('startHarvest');
+        const stopHarvestBtn = document.getElementById('stopHarvest');
+        const startNavigationBtn = document.getElementById('startNavigation');
+        const stopNavigationBtn = document.getElementById('stopNavigation');
+        const harvestStatus = document.getElementById('harvestStatus');
+        const navigationStatus = document.getElementById('navigationStatus');
+        const progressBar = document.getElementById('progressBar');
 
-                    // Create Robot Control Button (visible to all logged-in users)
-                    const robotControlButton = document.createElement('a');
-                    robotControlButton.href = '/robot-control';
-                    robotControlButton.textContent = 'Robot Control';
-                    robotControlButton.className = 'mdl-button mdl-js-button mdl-button--raised header-button';
-                    robotControlButton.style.backgroundColor = '#4caf50'; // Green color
-                    robotControlButton.style.color = 'white';
+        // Initialize progress bar
+        progressBar.style.width = '0%';
+
+        // Start Progress Simulation
+        function startProgressSimulation() {
+            if (robotState.progressInterval) {
+                clearInterval(robotState.progressInterval);
+            }
+            
+            robotState.progressInterval = setInterval(() => {
+                if (robotState.progress < 100) {
+                    robotState.progress += 0.5; // Slow progress
+                    progressBar.style.width = robotState.progress + '%';
                     
-                    const robotIcon = document.createElement('i');
-                    robotIcon.className = 'material-icons';
-                    robotIcon.textContent = 'smart_toy';
-                    robotControlButton.prepend(robotIcon);
-                    
-                    container.appendChild(robotControlButton);
-
-                    // Create Admin Button (only for admin users)
-                    if (user && user.role === 'admin') {
-                        
-                        const adminButton = document.createElement('a');
-                        adminButton.href = `${LOGIN_SERVER_URL}/admin`;
-                        adminButton.textContent = 'Admin Panel';
-                        adminButton.className = 'mdl-button mdl-js-button mdl-button--raised mdl-button--colored header-button';
-                        
-                        const adminIcon = document.createElement('i');
-                        adminIcon.className = 'material-icons';
-                        adminIcon.textContent = 'admin_panel_settings';
-                        
-                        adminButton.prepend(adminIcon);
-                        
-                        
-                        container.appendChild(adminButton);
+                    // Change color based on progress
+                    if (robotState.progress < 30) {
+                        progressBar.style.background = 'linear-gradient(90deg, #ff9800, #ff5722)';
+                    } else if (robotState.progress < 70) {
+                        progressBar.style.background = 'linear-gradient(90deg, #ffeb3b, #ff9800)';
+                    } else {
+                        progressBar.style.background = 'linear-gradient(90deg, #4caf50, #45a049)';
                     }
+                } else {
+                    clearInterval(robotState.progressInterval);
+                }
+            }, 100);
+        }
 
-                    // Ensure MDL components are upgraded
-                    if (componentHandler) {
-                        componentHandler.upgradeAllRegistered();
-                    }
-                })
-                .catch(error => {
-                    console.error("Network Error when checking session:", error);
-                    
-                    window.location.href = `${LOGIN_SERVER_URL}/login`; 
-                });
+        // Stop Progress Simulation
+        function stopProgressSimulation() {
+            if (robotState.progressInterval) {
+                clearInterval(robotState.progressInterval);
+                robotState.progressInterval = null;
+            }
+        }
+
+        // Reset Progress
+        function resetProgress() {
+            robotState.progress = 0;
+            progressBar.style.width = '0%';
+            progressBar.style.background = 'linear-gradient(90deg, #4caf50, #45a049)';
+            stopProgressSimulation();
+        }
+
+        // Harvest Control Functions
+        startHarvestBtn.addEventListener('click', function() {
+            if (!robotState.harvesting) {
+                robotState.harvesting = true;
+                startHarvestBtn.classList.add('active');
+                stopHarvestBtn.classList.remove('active');
+                harvestStatus.textContent = 'Status: Running';
+                harvestStatus.className = 'status-indicator status-running';
+                startProgressSimulation();
+            }
         });
 
-        // Enhanced cleanup for unwanted text nodes and title
+        stopHarvestBtn.addEventListener('click', function() {
+            if (robotState.harvesting) {
+                robotState.harvesting = false;
+                stopHarvestBtn.classList.add('active');
+                startHarvestBtn.classList.remove('active');
+                harvestStatus.textContent = 'Status: Stopped';
+                harvestStatus.className = 'status-indicator status-stopped';
+                stopProgressSimulation();
+            }
+        });
+
+        // Navigation Control Functions
+        startNavigationBtn.addEventListener('click', function() {
+            if (!robotState.navigation) {
+                robotState.navigation = true;
+                startNavigationBtn.classList.add('active');
+                stopNavigationBtn.classList.remove('active');
+                navigationStatus.textContent = 'Status: Running';
+                navigationStatus.className = 'status-indicator status-running';
+                startProgressSimulation();
+            }
+        });
+
+        stopNavigationBtn.addEventListener('click', function() {
+            if (robotState.navigation) {
+                robotState.navigation = false;
+                stopNavigationBtn.classList.add('active');
+                startNavigationBtn.classList.remove('active');
+                navigationStatus.textContent = 'Status: Stopped';
+                navigationStatus.className = 'status-indicator status-stopped';
+                stopProgressSimulation();
+            }
+        });
+
+        // Initialize MDL components
         document.addEventListener('DOMContentLoaded', function() {
-            function enforceCorrectTitle() {
-                const layoutTitle = document.querySelector('.mdl-layout-title');
-                const desiredTitle = 'Autonomous Oil Palm Harvesting Robot System';
-                
-                if (layoutTitle) {
-                    
-                    let currentTitle = layoutTitle.textContent;
-                    if (currentTitle.includes('ROSboard:')) {
-                        currentTitle = currentTitle.replace('ROSboard:', '').trim();
-                    }
-                    if (currentTitle !== desiredTitle) {
-                        layoutTitle.textContent = desiredTitle;
-                    }
-                }
-                
-
-                if (document.title !== desiredTitle) {
-                    document.title = desiredTitle;
-                }
+            if (typeof componentHandler !== 'undefined') {
+                componentHandler.upgradeAllRegistered();
             }
-            
-            function removeUnwantedTextNodes() {
-                
-                const bodyChildren = document.body.childNodes;
-                
-
-                for (let i = bodyChildren.length - 1; i >= 0; i--) {
-                    const node = bodyChildren[i];
-                    
-
-                    if (node.nodeType === Node.TEXT_NODE) {
-                        const textContent = node.textContent;
-                        
-
-                        if (textContent.includes('Â&nbsp;') || 
-                            textContent.trim() === 'Â' || 
-                            textContent.includes('\u00A0') ||
-                            textContent.trim() === '') {
-                            console.log('Removing unwanted text node:', textContent);
-                            node.remove();
-                        }
-                    }
-                    
-
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        if (node.tagName === 'TEXT' || 
-                            (node.textContent && node.textContent.includes('Â&nbsp;'))) {
-                            console.log('Removing unwanted element:', node);
-                            node.remove();
-                        }
-                    }
-                }
-            }
-            
-            // Run cleanup immediately
-            removeUnwantedTextNodes();
-            enforceCorrectTitle();
-            
-            // Set up mutation observer to catch any dynamically added/changed content
-            const observer = new MutationObserver(function(mutations) {
-                let shouldCleanup = false;
-                let shouldEnforceTitle = false;
-                
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                        mutation.addedNodes.forEach(function(node) {
-                            if (node.nodeType === Node.TEXT_NODE && 
-                                (node.textContent.includes('Â&nbsp;') || node.textContent.includes('\u00A0'))) {
-                                shouldCleanup = true;
-                            }
-                        });
-                    }
-                    
-
-                    if (mutation.type === 'characterData' && mutation.target.classList.contains('mdl-layout-title')) {
-                        shouldEnforceTitle = true;
-                    }
-                });
-                
-                if (shouldCleanup) {
-                    removeUnwantedTextNodes();
-                }
-                if (shouldEnforceTitle) {
-                    enforceCorrectTitle();
-                }
-            });
-            
-            // Start observing for changes
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true,
-                characterData: true
-            });
-            
-            // Run cleanup multiple times to catch any delayed changes
-            setTimeout(() => {
-                removeUnwantedTextNodes();
-                enforceCorrectTitle();
-            }, 100);
-            
-            setTimeout(() => {
-                removeUnwantedTextNodes();
-                enforceCorrectTitle();
-            }, 500);
-            
-            setTimeout(() => {
-                removeUnwantedTextNodes();
-                enforceCorrectTitle();
-            }, 1000);
         });
     </script>
+</body>
 </html>
