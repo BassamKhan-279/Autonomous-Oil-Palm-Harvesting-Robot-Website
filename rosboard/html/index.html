@@ -23,6 +23,24 @@
         <script type="text/javascript" src="js/index.js" defer></script>
 
         <title>Autonomous Oil Palm Harvesting Robot System</title>
+        
+        <style>
+            /* Smaller button styles */
+            .header-button {
+                margin-right: 12px !important;
+                padding: 0 12px !important;
+                border-radius: 4px !important;
+                height: 36px !important;
+                line-height: 36px !important;
+                font-size: 14px !important;
+                min-width: auto !important;
+            }
+            
+            .header-button .material-icons {
+                font-size: 18px !important;
+                margin-right: 6px !important;
+            }
+        </style>
     </head>
     <body>
         <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
@@ -80,40 +98,43 @@
                 .then(user => {
                     if (!user) return; // Stop if redirect happened above
 
+                    // Create Robot Control Button (visible to all logged-in users)
+                    const robotControlButton = document.createElement('a');
+                    robotControlButton.href = '/robot-control'; // Update this path when you create the robot control page
+                    robotControlButton.textContent = 'Robot Control';
+                    robotControlButton.className = 'mdl-button mdl-js-button mdl-button--raised header-button';
+                    robotControlButton.style.backgroundColor = '#4caf50'; // Green color
+                    robotControlButton.style.color = 'white';
+                    
+                    const robotIcon = document.createElement('i');
+                    robotIcon.className = 'material-icons';
+                    robotIcon.textContent = 'smart_toy';
+                    robotControlButton.prepend(robotIcon);
+                    
+                    container.appendChild(robotControlButton);
+
+                    // Create Admin Button (only for admin users)
                     if (user && user.role === 'admin') {
-                        // Create the Admin Button element
                         const adminButton = document.createElement('a');
                         adminButton.href = `${LOGIN_SERVER_URL}/admin`;
                         adminButton.textContent = 'Admin Panel';
+                        adminButton.className = 'mdl-button mdl-js-button mdl-button--raised mdl-button--colored header-button';
                         
-                        // Apply Material Design Lite (MDL) button classes
-                        adminButton.className = 'mdl-button mdl-js-button mdl-button--raised mdl-button--colored';
-                        adminButton.style.marginRight = '20px';
-                        adminButton.style.padding = '0 16px';
-                        
-                        // 🟢 FIX: Set a smaller border radius for the button
-                        adminButton.style.borderRadius = '4px'; 
-                        
-                        // Add an icon for clarity
                         const adminIcon = document.createElement('i');
                         adminIcon.className = 'material-icons';
                         adminIcon.textContent = 'admin_panel_settings';
-                        adminIcon.style.marginRight = '8px';
-
                         adminButton.prepend(adminIcon);
                         
-                        // Insert the button into the header row
                         container.appendChild(adminButton);
+                    }
 
-                        // Ensure MDL component is upgraded
-                        if (componentHandler) {
-                            componentHandler.upgradeElement(adminButton);
-                        }
+                    // Ensure MDL components are upgraded
+                    if (componentHandler) {
+                        componentHandler.upgradeAllRegistered();
                     }
                 })
                 .catch(error => {
                     console.error("Network Error when checking session:", error);
-                    // This catches general network failures (e.g., server 8000 is down)
                     window.location.href = `${LOGIN_SERVER_URL}/login`; 
                 });
         });
@@ -125,7 +146,6 @@
                 const desiredTitle = 'Autonomous Oil Palm Harvesting Robot System';
                 
                 if (layoutTitle) {
-                    // Remove any "ROSboard:" prefix and set the correct title
                     let currentTitle = layoutTitle.textContent;
                     if (currentTitle.includes('ROSboard:')) {
                         currentTitle = currentTitle.replace('ROSboard:', '').trim();
@@ -135,25 +155,20 @@
                     }
                 }
                 
-                // Also ensure document title is correct
                 if (document.title !== desiredTitle) {
                     document.title = desiredTitle;
                 }
             }
             
             function removeUnwantedTextNodes() {
-                // Get all direct child nodes of body
                 const bodyChildren = document.body.childNodes;
                 
-                // Loop through all child nodes (including text nodes)
                 for (let i = bodyChildren.length - 1; i >= 0; i--) {
                     const node = bodyChildren[i];
                     
-                    // Check if it's a text node with unwanted content
                     if (node.nodeType === Node.TEXT_NODE) {
                         const textContent = node.textContent;
                         
-                        // Remove text nodes that contain the unwanted entities or are just whitespace
                         if (textContent.includes('Â&nbsp;') || 
                             textContent.trim() === 'Â' || 
                             textContent.includes('\u00A0') ||
@@ -163,7 +178,6 @@
                         }
                     }
                     
-                    // Also check for any unwanted elements that might contain the text
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         if (node.tagName === 'TEXT' || 
                             (node.textContent && node.textContent.includes('Â&nbsp;'))) {
@@ -193,7 +207,6 @@
                         });
                     }
                     
-                    // Check if title was modified
                     if (mutation.type === 'characterData' && mutation.target.classList.contains('mdl-layout-title')) {
                         shouldEnforceTitle = true;
                     }
