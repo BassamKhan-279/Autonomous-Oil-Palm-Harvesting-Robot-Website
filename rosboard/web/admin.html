@@ -59,6 +59,17 @@
             font-weight: 500;
         }
         
+        /* Logout button styling */
+        .logout-button {
+            color: white !important;
+            min-width: 40px !important;
+            padding: 0 8px !important;
+        }
+        
+        .logout-button .material-icons {
+            font-size: 20px;
+        }
+        
         /* Admin content styling */
         .admin-content {
             color: #000;
@@ -194,6 +205,9 @@
                 <nav class="mdl-navigation">
                     <a class="mdl-navigation__link main-page-link" href="http://localhost:8888">
                         <i class="material-icons">home</i> Main Page
+                    </a>
+                    <a class="mdl-navigation__link logout-button" href="/logout" title="Logout">
+                        <i class="material-icons">power_settings_new</i>
                     </a>
                 </nav>
             </div>
