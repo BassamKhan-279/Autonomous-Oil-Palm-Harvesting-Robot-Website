@@ -7,12 +7,12 @@
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
-    <!-- FIX: Use absolute URLs to ROSBoard server (port 8888) for static files -->
-    <link rel="stylesheet" href="http://localhost:8888/css/material.indigo-blue.min.css" />
-    <link href="http://localhost:8888/css/index.css" media="all" rel="stylesheet" type="text/css">
+    <!-- Use relative paths to avoid CORS issues -->
+    <link rel="stylesheet" href="css/material.indigo-blue.min.css" />
+    <link href="css/index.css" media="all" rel="stylesheet" type="text/css">
     
-    <script src="http://localhost:8888/js/jquery-3.1.0.min.js"></script>
-    <script src="http://localhost:8888/js/material.min.js" defer></script>
+    <script src="js/jquery-3.1.0.min.js"></script>
+    <script src="js/material.min.js" defer></script>
 
     <style>
         /* Main layout styling */
@@ -21,7 +21,7 @@
         }
         
         .mdl-layout-title {
-            font-family: 'Titillium Web', sans-serif;
+            font-family: Arial, sans-serif;
             color: white;
         }
         
@@ -62,22 +62,27 @@
         /* Admin content styling */
         .admin-content {
             color: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .container {
             background: #ffffff; 
             color: #000;
-            padding: 20px 40px; 
+            padding: 25px 30px; 
             border-radius: 12px; 
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
             width: 100%;
+            box-sizing: border-box;
         }
         
         h1, h2 { 
             border-bottom: 2px solid #3f51b5; 
             padding-bottom: 10px; 
             color: #000; 
+            margin-top: 0;
         }
         
         table { 
@@ -102,24 +107,37 @@
             background-color: #f2f2f2; 
         }
         
-        input, select, button { 
+        input, select { 
             background: #fff; 
             color: #000; 
             border: 1px solid #ccc; 
             padding: 8px; 
             margin: 5px 0; 
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .users-table select { 
             background: #fff; 
             color: #333; 
             border: 1px solid #ccc; 
-            padding: 4px; 
+            padding: 6px; 
             border-radius: 4px; 
+            width: 100%;
         }
         
         .delete-btn { 
             color: #e53935; 
+            width: 100%;
+            padding: 8px 12px;
+        }
+        
+        .update-role-btn {
+            background-color: #3f51b5;
+            color: white;
+            width: 100%;
+            padding: 8px 12px;
+            margin-top: 5px;
         }
         
         .delete-btn:hover { 
@@ -136,10 +154,34 @@
             font-weight: bold; 
         }
         
+        /* Improved Create User button */
+        .create-user-btn {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
         /* Button styling */
         .mdl-button--raised {
             border-radius: 4px;
-            padding: 8px 16px;
+            padding: 10px 20px;
+        }
+        
+        /* Role selector container */
+        .role-selector-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Actions cell styling */
+        .actions-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
     </style>
 </head>
@@ -167,20 +209,20 @@
                         <form id="create-user-form">
                             <div class="form-group">
                                 <label for="new-email">Email:</label>
-                                <input type="email" id="new-email" name="email" placeholder="New user email" required style="width: 100%;">
+                                <input type="email" id="new-email" name="email" placeholder="New user email" required>
                             </div>
                             <div class="form-group">
                                 <label for="new-password">Password:</label>
-                                <input type="password" id="new-password" name="password" placeholder="Password (min 6 chars)" required style="width: 100%;">
+                                <input type="password" id="new-password" name="password" placeholder="Password (min 6 characters)" required>
                             </div>
                             <div class="form-group">
                                 <label for="new-role">Role:</label>
-                                <select id="new-role" name="role" style="width: 100%;">
+                                <select id="new-role" name="role">
                                     <option value="user">User</option>
                                     <option value="admin">Admin</option>
                                 </select>
                             </div>
-                            <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+                            <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored create-user-btn">
                                 Create User
                             </button>
                         </form>
@@ -265,12 +307,17 @@
             row.innerHTML = `
                 <td>${user.email}</td>
                 <td>
-                    <select class="role-selector" data-user-id="${user.id}" style="width: 100px;">
-                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
-                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-                    </select>
+                    <div class="role-selector-container">
+                        <select class="role-selector" data-user-id="${user.id}">
+                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </div>
                 </td>
-                <td>
+                <td class="actions-cell">
+                    <button class="mdl-button mdl-js-button mdl-button--raised update-role-btn" data-user-id="${user.id}">
+                        Update Role
+                    </button>
                     <button class="mdl-button mdl-js-button delete-btn" data-user-id="${user.id}" data-user-email="${user.email}">
                         Delete
                     </button>
@@ -281,9 +328,10 @@
                 deleteUser(this.getAttribute('data-user-id'), this.getAttribute('data-user-email'), row); 
             });
             
-            const roleSelector = row.querySelector('.role-selector');
-            roleSelector.addEventListener('change', function() { 
-                updateUserRole(this.getAttribute('data-user-id'), this.value); 
+            const updateRoleButton = row.querySelector('.update-role-btn');
+            updateRoleButton.addEventListener('click', function() { 
+                const roleSelector = row.querySelector('.role-selector');
+                updateUserRole(this.getAttribute('data-user-id'), roleSelector.value); 
             });
             
             return row;
@@ -332,7 +380,7 @@
                     return response.json();
                 })
                 .then(user => {
-
+                
                     fetchAndRenderUsers(); 
                 })
                 .catch(error => { 
