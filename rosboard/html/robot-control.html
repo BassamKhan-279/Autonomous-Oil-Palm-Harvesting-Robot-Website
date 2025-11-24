@@ -39,7 +39,7 @@
             padding: 30px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             width: 90%;
-            max-width: 800px;
+            max-width: 900px;
         }
         
         .page-title {
@@ -65,8 +65,9 @@
             background: #f8f9fa;
             border: 2px solid #e9ecef;
             border-radius: 12px;
-            padding: 25px;
+            padding: 20px;
             text-align: center;
+            width: 45%;
             min-width: 280px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
@@ -219,7 +220,7 @@
                 
                 <!-- Progress Bar Section -->
                 <div class="progress-section">
-                    <div class="progress-label">Task Completion Progress</div>
+                    <div class="progress-label">Task Correlation Progress</div>
                     <div class="progress-container">
                         <div class="progress-bar" id="progressBar"></div>
                     </div>
@@ -227,17 +228,32 @@
 
                 <!-- Control Boxes -->
                 <div class="boxes-container">
-                    <!-- Single Task Control Box -->
+                    <!-- Robot 1 Control Box -->
                     <div class="control-box">
-                        <div class="box-title">Task Control</div>
-                        <button class="control-button start-button" id="startTask">
+                        <div class="box-title">Robot Control System (Robot 1)</div>
+                        <button class="control-button start-button" id="startTask1">
                             <i class="material-icons">play_arrow</i> Start Task
                         </button>
                         <div style="height: 15px;"></div> <!-- Spacing -->
-                        <button class="control-button stop-button active" id="stopTask">
+                        <button class="control-button stop-button active" id="stopTask1">
                             <i class="material-icons">stop</i> End Task
                         </button>
-                        <div class="status-indicator status-stopped" id="taskStatus">
+                        <div class="status-indicator status-stopped" id="taskStatus1">
+                            Status: Stopped
+                        </div>
+                    </div>
+                    
+                    <!-- Robot 2 Control Box -->
+                    <div class="control-box">
+                        <div class="box-title">Robot Control System (Robot 2)</div>
+                        <button class="control-button start-button" id="startTask2">
+                            <i class="material-icons">play_arrow</i> Start Task
+                        </button>
+                        <div style="height: 15px;"></div> <!-- Spacing -->
+                        <button class="control-button stop-button active" id="stopTask2">
+                            <i class="material-icons">stop</i> End Task
+                        </button>
+                        <div class="status-indicator status-stopped" id="taskStatus2">
                             Status: Stopped
                         </div>
                     </div>
@@ -248,23 +264,37 @@
 
     <script>
         // Robot Control State
-        let robotState = {
-            taskRunning: false,
-            progress: 0,
-            progressInterval: null
+        let robotStates = {
+            robot1: {
+                taskRunning: false,
+                progress: 0,
+                progressInterval: null
+            },
+            robot2: {
+                taskRunning: false,
+                progress: 0,
+                progressInterval: null
+            }
         };
 
         // DOM Elements
-        const startTaskBtn = document.getElementById('startTask');
-        const stopTaskBtn = document.getElementById('stopTask');
-        const taskStatus = document.getElementById('taskStatus');
+        const startTaskBtn1 = document.getElementById('startTask1');
+        const stopTaskBtn1 = document.getElementById('stopTask1');
+        const taskStatus1 = document.getElementById('taskStatus1');
+        
+        const startTaskBtn2 = document.getElementById('startTask2');
+        const stopTaskBtn2 = document.getElementById('stopTask2');
+        const taskStatus2 = document.getElementById('taskStatus2');
+        
         const progressBar = document.getElementById('progressBar');
 
         // Initialize progress bar
         progressBar.style.width = '0%';
 
-        // Start Progress Simulation
-        function startProgressSimulation() {
+        // Start Progress Simulation for a specific robot
+        function startProgressSimulation(robotId) {
+            const robotState = robotStates[robotId];
+            
             if (robotState.progressInterval) {
                 clearInterval(robotState.progressInterval);
             }
@@ -272,12 +302,15 @@
             robotState.progressInterval = setInterval(() => {
                 if (robotState.progress < 100) {
                     robotState.progress += 0.5; // Slow progress
-                    progressBar.style.width = robotState.progress + '%';
+                    
+                    // Update combined progress bar (average of both robots)
+                    const totalProgress = (robotStates.robot1.progress + robotStates.robot2.progress) / 2;
+                    progressBar.style.width = totalProgress + '%';
                     
                     // Change color based on progress
-                    if (robotState.progress < 30) {
+                    if (totalProgress < 30) {
                         progressBar.style.background = 'linear-gradient(90deg, #ff9800, #ff5722)';
-                    } else if (robotState.progress < 70) {
+                    } else if (totalProgress < 70) {
                         progressBar.style.background = 'linear-gradient(90deg, #ffeb3b, #ff9800)';
                     } else {
                         progressBar.style.background = 'linear-gradient(90deg, #4caf50, #45a049)';
@@ -288,42 +321,74 @@
             }, 100);
         }
 
-        // Stop Progress Simulation
-        function stopProgressSimulation() {
+        // Stop Progress Simulation for a specific robot
+        function stopProgressSimulation(robotId) {
+            const robotState = robotStates[robotId];
             if (robotState.progressInterval) {
                 clearInterval(robotState.progressInterval);
                 robotState.progressInterval = null;
             }
         }
 
-        // Reset Progress
-        function resetProgress() {
+        // Reset Progress for a specific robot
+        function resetProgress(robotId) {
+            const robotState = robotStates[robotId];
             robotState.progress = 0;
-            progressBar.style.width = '0%';
-            progressBar.style.background = 'linear-gradient(90deg, #4caf50, #45a049)';
-            stopProgressSimulation();
+            
+            // Update combined progress bar
+            const totalProgress = (robotStates.robot1.progress + robotStates.robot2.progress) / 2;
+            progressBar.style.width = totalProgress + '%';
+            
+            if (totalProgress === 0) {
+                progressBar.style.background = 'linear-gradient(90deg, #4caf50, #45a049)';
+            }
+            
+            stopProgressSimulation(robotId);
         }
 
-        // Task Control Functions
-        startTaskBtn.addEventListener('click', function() {
-            if (!robotState.taskRunning) {
-                robotState.taskRunning = true;
-                startTaskBtn.classList.add('active');
-                stopTaskBtn.classList.remove('active');
-                taskStatus.textContent = 'Status: Running';
-                taskStatus.className = 'status-indicator status-running';
-                startProgressSimulation();
+        // Robot 1 Task Control Functions
+        startTaskBtn1.addEventListener('click', function() {
+            if (!robotStates.robot1.taskRunning) {
+                robotStates.robot1.taskRunning = true;
+                startTaskBtn1.classList.add('active');
+                stopTaskBtn1.classList.remove('active');
+                taskStatus1.textContent = 'Status: Running';
+                taskStatus1.className = 'status-indicator status-running';
+                startProgressSimulation('robot1');
             }
         });
 
-        stopTaskBtn.addEventListener('click', function() {
-            if (robotState.taskRunning) {
-                robotState.taskRunning = false;
-                stopTaskBtn.classList.add('active');
-                startTaskBtn.classList.remove('active');
-                taskStatus.textContent = 'Status: Stopped';
-                taskStatus.className = 'status-indicator status-stopped';
-                stopProgressSimulation();
+        stopTaskBtn1.addEventListener('click', function() {
+            if (robotStates.robot1.taskRunning) {
+                robotStates.robot1.taskRunning = false;
+                stopTaskBtn1.classList.add('active');
+                startTaskBtn1.classList.remove('active');
+                taskStatus1.textContent = 'Status: Stopped';
+                taskStatus1.className = 'status-indicator status-stopped';
+                stopProgressSimulation('robot1');
+            }
+        });
+
+        // Robot 2 Task Control Functions
+        startTaskBtn2.addEventListener('click', function() {
+            if (!robotStates.robot2.taskRunning) {
+                robotStates.robot2.taskRunning = true;
+                startTaskBtn2.classList.add('active');
+                stopTaskBtn2.classList.remove('active');
+                taskStatus2.textContent = 'Status: Running';
+                taskStatus2.className = 'status-indicator status-running';
+                startProgressSimulation('robot2');
+            }
+        });
+
+        stopTaskBtn2.addEventListener('click', function() {
+            if (robotStates.robot2.taskRunning) {
+                robotStates.robot2.taskRunning = false;
+                stopTaskBtn2.classList.add('active');
+                startTaskBtn2.classList.remove('active');
+                taskStatus2.textContent = 'Status: Stopped';
+                taskStatus2.className = 'status-indicator status-stopped';
+                stopProgressSimulation('robot2');
             }
         });
 
