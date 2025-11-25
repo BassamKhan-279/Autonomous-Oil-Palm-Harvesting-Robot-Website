@@ -436,6 +436,37 @@ async def delete_user(request):
             print(f"[Admin] ❌ Failed to delete auth user {user_id}: {await resp.text()}")
             return web.json_response({"error": "Failed to delete user"}, status=resp.status)
 
+# === PASSWORD UPDATE ENDPOINT ONLY (NO PASSWORD VIEWING) ===
+
+async def update_user_password(request):
+    """API for admins to update a user's password."""
+    await require_admin(request)
+    user_id = request.match_info["id"]
+    data = await request.json()
+    new_password = data.get("password")
+
+    if not new_password or len(new_password) < 6:
+        return web.json_response({"error": "Password must be at least 6 characters"}, status=400)
+
+    # Update password using Supabase admin API
+    url = f"{AUTH_BASE}/admin/users/{user_id}"
+    headers = {
+        "apikey": SUPABASE_ROLE_KEY,
+        "Authorization": f"Bearer {SUPABASE_ROLE_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {"password": new_password}
+    
+    async with request.app["http_client"].put(url, headers=headers, json=payload) as resp:
+        if resp.status == 200:
+            print(f"[Admin] ✅ Password updated for user {user_id}")
+            return web.json_response({"status": "password_updated"})
+        else:
+            error_data = await resp.json()
+            error_msg = error_data.get('msg', 'Failed to update password')
+            print(f"[Admin] ❌ Failed to update password for user {user_id}: {error_msg}")
+            return web.json_response({"error": error_msg}, status=resp.status)
+
 
 # 🟢 CORS MIDDLEWARE (Fixes the redirect loop)
 @web.middleware
@@ -523,6 +554,9 @@ def main():
     app.router.add_post("/api/users", admin_create_user) 
     app.router.add_put("/api/users/{id}/role", update_user_role)
     app.router.add_delete("/api/users/{id}", delete_user)
+    
+    # === PASSWORD UPDATE ROUTE ONLY ===
+    app.router.add_put("/api/users/{id}/password", update_user_password)
 
     app.router.add_static("/static/", path=str(WEB_DIR / "static"), name="static")
 
