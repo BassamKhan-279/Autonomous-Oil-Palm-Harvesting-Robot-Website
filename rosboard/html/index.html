@@ -70,10 +70,10 @@
               
               <div class="mdl-layout-spacer"></div>
               
-              <!-- Updated container with navigation class -->
+              <!-- container with navigation class -->
               <nav class="header-nav">
                 <span id="admin-button-container"></span>
-                <!-- Logout Button - UPDATED TO ABSOLUTE URL -->
+                <!-- Logout Button -->
                 <a class="mdl-navigation__link logout-button" href="http://localhost:8000/login" title="Logout">
                     <i class="material-icons">power_settings_new</i>
                 </a>
@@ -83,10 +83,10 @@
           </header>
           <div class="mdl-layout__drawer">
             <nav id="topics-nav" class="mdl-navigation">
-                <div id="topics-nav-system-title" class="topics-nav-title">System</div>
-                <div id="topics-nav-system"></div>
-                <div id="topics-nav-ros-title" class="topics-nav-title">ROS topics</div>
+                <div id="topics-nav-ros-title" class="topics-nav-title">ROBOT 1</div>
                 <div id="topics-nav-ros"></div>
+                <div id="topics-nav-ros2-title" class="topics-nav-title">ROBOT 2</div>
+                <div id="topics-nav-ros2"></div>
                 <div style="opacity:0.3;" id="topics-nav-unsupported"></div>
             </nav>
           </div>
@@ -115,7 +115,7 @@
                 .then(response => {
                     // Check for network errors, 401 Unauthorized, or 403 Forbidden
                     if (response.status === 401 || response.status === 403 || !response.ok) {
-                        // User not logged in/session expired, redirect them - UPDATED PATH
+                        // User not logged in/session expired, redirect them
                         window.location.href = `${LOGIN_SERVER_URL}/login`;
                         return null; // Stop processing
                     }
@@ -165,7 +165,7 @@
                 .catch(error => {
                     console.error("Network Error when checking session:", error);
                     
-                    // UPDATED PATH - Fixed to use /login instead of /web/login.html
+                    //Fixed to use /login instead of /web/login.html
                     window.location.href = `${LOGIN_SERVER_URL}/login`; 
                 });
         });
